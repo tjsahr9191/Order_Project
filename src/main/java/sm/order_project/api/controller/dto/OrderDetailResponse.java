@@ -30,8 +30,6 @@ public class OrderDetailResponse {
     }
 
     private static List<ProductInfo> createProductInfos(Order order) {
-//        return null;
-        System.out.println(order.getOrderDetails().getOrderDetailList().size());
         return order.getOrderDetails().getOrderDetailList().stream()
                 .map(ProductInfo::of)
                 .toList();
