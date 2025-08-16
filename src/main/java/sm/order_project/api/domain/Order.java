@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -26,12 +27,18 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderDetail> orderDetails;
+//    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<OrderDetail> orderDetails = new ArrayList<>();
+    @Embedded // OrderDetails 클래스를 이 엔티티에 포함시킴
+    private OrderDetails orderDetails;
 
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "payment_id")
     private Payment payment;
+
+    @OneToOne(fetch = LAZY)
+    @JoinColumn(name = "delivery_id")
+    private Delivery delivery;
 
     @Embedded
     private Address address;
@@ -45,10 +52,11 @@ public class Order extends BaseEntity {
     private String tid;
 
     @Builder
-    public Order(Member member, List<OrderDetail> orderDetails, Payment payment, Address address, String name, String no, int totalPrice, String tid) {
-        this.member = member;
+    public Order(OrderDetails orderDetails, Member member, Payment payment, Delivery delivery, Address address, String name, String no, int totalPrice, String tid) {
         this.orderDetails = orderDetails;
+        this.member = member;
         this.payment = payment;
+        this.delivery = delivery;
         this.address = address;
         this.name = name;
         this.no = no;
@@ -59,6 +67,15 @@ public class Order extends BaseEntity {
     public void addOrderDetail(OrderDetail orderDetail) {
         this.orderDetails.add(orderDetail);
         orderDetail.updateOrder(this);
+    }
+
+    public Long calculateTotalAmount() {
+//        return null;
+        return orderDetails.calculateTotalAmount();
+    }
+
+    public DeliveryStatus getDeliveryStatus() {
+        return delivery.getDeliveryStatus();
     }
 
 }

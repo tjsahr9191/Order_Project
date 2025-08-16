@@ -42,4 +42,7 @@ public class OrderDetail extends BaseEntity {
         this.order = order;
     }
 
+    public long calculateTotalPrice() {
+        return (long) price * quantity;
+    }
 }
