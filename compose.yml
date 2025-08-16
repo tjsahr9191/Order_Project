@@ -5,6 +5,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:mysql://order-db:3306/order_project?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
       JAVA_OPTS: "-Xms256m -Xmx512m"  # JVM 힙 메모리 제한
     deploy:
@@ -38,7 +39,7 @@ services:
     networks:
       - monitoring
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "order_project_user", "--password=0000" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "order_project_user", "--password=password1234" ]
       interval: 10s
       timeout: 5s
       retries: 5
