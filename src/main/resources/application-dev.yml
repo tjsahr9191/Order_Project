@@ -55,3 +55,7 @@ server:
   servlet:
     session:
       timeout: 120s                # ?? ????
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true

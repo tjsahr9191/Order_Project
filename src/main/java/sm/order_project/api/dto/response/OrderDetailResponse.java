@@ -1,4 +1,4 @@
-package sm.order_project.api.controller.dto;
+package sm.order_project.api.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

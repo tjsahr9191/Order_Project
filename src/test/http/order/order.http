@@ -1,2 +1,26 @@
 ### 주문 상세 조회
 GET http://localhost:8080/api/orders/1
+
+### 주문 페이지 조회
+GET http://localhost:8080/api/orders
+
+### 주문 페이지 조회 - 특정 유저 이름
+GET http://localhost:8080/api/orders?memberName=홍길동
+
+### 주문 날짜 범위로 검색 (2025-08-01 ~ 2025-08-15)
+GET http://localhost:8080/api/orders?orderDateFrom=2025-08-01&orderDateTo=2025-08-15
+
+### 배송 상태와 최소 주문 금액으로 검색 (배송 완료, 3만원 이상)
+GET http://localhost:8080/api/orders?deliveryStatus=ORDER&minPrice=30000
+
+### 가격 높은 순 (정렬)
+GET http://localhost:8080/api/orders?sortBy=priceDesc
+
+### 가격 낮은 순 (정렬)
+GET http://localhost:8080/api/orders?sortBy=priceAsc
+
+### 페이징 처리
+GET http://localhost:8080/api/orders?page=2&size=5
+
+### 복합 조건 활용
+GET http://localhost:8080/api/orders?memberName=김&paymentMethod=CARD&sortBy=priceAsc&page=0&size=10

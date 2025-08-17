@@ -1,12 +1,13 @@
 package sm.order_project.api.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
 import sm.order_project.api.common.ApiResponse;
-import sm.order_project.api.controller.dto.OrderDetailResponse;
+import sm.order_project.api.dto.response.OrderDetailResponse;
+import sm.order_project.api.dto.request.OrderSearchCondition;
+import sm.order_project.api.dto.response.SimpleOrderResponse;
 import sm.order_project.api.service.OrderService;
 
 @RestController
@@ -19,6 +20,12 @@ public class OrderController {
     @GetMapping("/{id}")
     public ApiResponse<OrderDetailResponse> getOrderDetails(@PathVariable Long id) {
         return ApiResponse.ok(orderService.findOrderDetails(id));
+    }
+
+    @GetMapping
+    public ApiResponse<Page<SimpleOrderResponse>> getOrders(
+            @ModelAttribute OrderSearchCondition condition, Pageable pageable) {
+        return ApiResponse.ok(orderService.findOrdersByCondition(condition, pageable));
     }
 
 }
