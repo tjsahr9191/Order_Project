@@ -27,6 +27,7 @@ GET http://localhost:8080/api/orders?memberName=김&paymentMethod=CARD&sortBy=pr
 
 ###
 GET http://localhost:8080/api/orders/statistics/member-stats
-
 ###
-GET http://localhost:8080/api/orders/statistics/member-stats?page=0&size=1
+
+# @connection-timeout 5 m
+GET http://localhost:8080/api/orders/statistics/member-stats?page=0&size=1&minAmount=10000
