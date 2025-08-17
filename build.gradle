@@ -69,7 +69,10 @@ clean {
     delete file('src/main/generated')
 }
 
-compileJava.options.encoding = 'UTF-8'
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
+sourceSets {
+    main {
+        java {
+            srcDirs = ["$projectDir/src/main/java", "$projectDir/build/generated/sources/annotationProcessor/java/main"]
+        }
+    }
 }

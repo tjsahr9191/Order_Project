@@ -5,10 +5,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sm.order_project.api.dto.OrderStatisticsDto;
 import sm.order_project.api.dto.response.OrderDetailResponse;
 import sm.order_project.api.dto.request.OrderSearchCondition;
 import sm.order_project.api.dto.response.SimpleOrderResponse;
 import sm.order_project.api.domain.Order;
+import sm.order_project.api.repository.OrderQueryRepository;
 import sm.order_project.api.repository.OrderRepository;
 
 @Service
@@ -17,6 +19,7 @@ import sm.order_project.api.repository.OrderRepository;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderQueryRepository orderQueryRepository;
 
     public OrderDetailResponse findOrderDetails(Long id) {
 
@@ -31,6 +34,13 @@ public class OrderService {
         Page<Order> orderPage = orderRepository.searchOrders(condition, pageable);
 
         return orderPage.map(SimpleOrderResponse::of);
+    }
+
+    public Page<OrderStatisticsDto> getOrderStatistics(Long minAmount, Pageable pageable) {
+        if (minAmount == null) {
+            minAmount = 0L;
+        }
+        return orderQueryRepository.getOrderStatisticsQuerydsl(minAmount, pageable);
     }
 
 }

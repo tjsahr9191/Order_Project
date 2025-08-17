@@ -24,3 +24,9 @@ GET http://localhost:8080/api/orders?page=2&size=5
 
 ### 복합 조건 활용
 GET http://localhost:8080/api/orders?memberName=김&paymentMethod=CARD&sortBy=priceAsc&page=0&size=10
+
+###
+GET http://localhost:8080/api/orders/statistics/member-stats
+
+###
+GET http://localhost:8080/api/orders/statistics/member-stats?page=0&size=1
