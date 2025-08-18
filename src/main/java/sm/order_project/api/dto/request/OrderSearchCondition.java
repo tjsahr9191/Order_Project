@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Builder
 public class OrderSearchCondition {
 
-    private String memberName; // 회원 이름
+    private Long memberId; // 회원 이름
 
     private DeliveryStatus deliveryStatus; // 주문 상태 (READY, COMP)
 

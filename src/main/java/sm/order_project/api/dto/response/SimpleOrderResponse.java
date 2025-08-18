@@ -14,17 +14,17 @@ public class SimpleOrderResponse {
 
     private Long orderId;
     private String orderNo;
-    private String memberName;
+    private Long memberId;
     private int totalPrice;
     private DeliveryStatus deliveryStatus;
     private Address address;
     private LocalDateTime orderDate;
 
     @Builder
-    private SimpleOrderResponse(Long orderId, String orderNo, String memberName, int totalPrice, DeliveryStatus deliveryStatus, Address address, LocalDateTime orderDate) {
+    private SimpleOrderResponse(Long orderId, String orderNo, Long memberId, int totalPrice, DeliveryStatus deliveryStatus, Address address, LocalDateTime orderDate) {
         this.orderId = orderId;
         this.orderNo = orderNo;
-        this.memberName = memberName;
+        this.memberId = memberId;
         this.totalPrice = totalPrice;
         this.deliveryStatus = deliveryStatus;
         this.address = address;
@@ -35,7 +35,7 @@ public class SimpleOrderResponse {
         return SimpleOrderResponse.builder()
                 .orderId(order.getId())
                 .orderNo(order.getNo())
-                .memberName(order.getMember().getName())
+                .memberId(order.getMember().getId())
                 .totalPrice(order.getTotalPrice())
                 .deliveryStatus(order.getDeliveryStatus())
                 .address(order.getAddress())

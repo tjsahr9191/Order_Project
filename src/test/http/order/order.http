@@ -4,9 +4,6 @@ GET http://localhost:8080/api/orders/1
 ### 주문 페이지 조회
 GET http://localhost:8080/api/orders
 
-### 주문 페이지 조회 - 특정 유저 이름
-GET http://localhost:8080/api/orders?memberName=홍길동
-
 ### 주문 날짜 범위로 검색 (2025-08-01 ~ 2025-08-15)
 GET http://localhost:8080/api/orders?orderDateFrom=2025-08-01&orderDateTo=2025-08-15
 
@@ -22,12 +19,16 @@ GET http://localhost:8080/api/orders?sortBy=priceAsc
 ### 페이징 처리
 GET http://localhost:8080/api/orders?page=2&size=5
 
+### 복합 조건 활용 (memberId 존재)
+GET http://localhost:8080/api/orders?memberId=13415&deliveryStatus=ORDER&sortBy=priceAsc&orderDateFrom=2025-08-01&orderDateTo=2025-08-15&minPrice=30000
+
 ### 복합 조건 활용
-GET http://localhost:8080/api/orders?memberName=김&paymentMethod=CARD&sortBy=priceAsc&page=0&size=10
+GET http://localhost:8080/api/orders?deliveryStatus=ORDER&sortBy=priceAsc&orderDateFrom=2025-08-01&orderDateTo=2025-08-15&minPrice=30000
 
 ###
+# @connection-timeout 5 m
 GET http://localhost:8080/api/orders/statistics/member-stats
-###
 
+###
 # @connection-timeout 5 m
 GET http://localhost:8080/api/orders/statistics/member-stats?page=0&size=1&minAmount=10000

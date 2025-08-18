@@ -49,7 +49,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
                 .join(order.delivery, delivery)
                 .join(order.payment, payment)
                 .where(
-                        memberNameEq(condition.getMemberName()),
+                        memberIdEq(condition.getMemberId()),
                         deliveryStatusEq(condition.getDeliveryStatus()),
                         orderDateBetween(
                                 condition.getOrderDateFrom(),
@@ -78,7 +78,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
                 .join(order.delivery, delivery)
                 .join(order.payment, payment)
                 .where(
-                        memberNameEq(condition.getMemberName()),
+                        memberIdEq(condition.getMemberId()),
                         deliveryStatusEq(condition.getDeliveryStatus()),
                         orderDateBetween(
                                 condition.getOrderDateFrom(),
@@ -100,8 +100,8 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
         };
     }
 
-    private BooleanExpression memberNameEq(String memberName) {
-        return StringUtils.hasText(memberName) ? member.name.contains(memberName) : null;
+    private BooleanExpression memberIdEq(Long memberId) {
+        return memberId != null ? member.id.eq(memberId) : null;
     }
 
     private BooleanExpression deliveryStatusEq(DeliveryStatus deliveryStatus) {
