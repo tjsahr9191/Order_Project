@@ -2,7 +2,6 @@ package sm.order_project.api.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
@@ -36,14 +35,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
 
     @Override
     public Page<Order> searchOrders(OrderSearchCondition condition, Pageable pageable) {
-
-        List<Order> content = getPageOrdersBy(condition, pageable);
-
-        return new PageImpl<>(content, pageable, getTotalFromCountQueryBy(condition));
-    }
-
-    private List<Order> getPageOrdersBy(OrderSearchCondition condition, Pageable pageable) {
-        return queryFactory
+        List<Order> content = queryFactory
                 .selectFrom(order)
                 .join(order.member, member)
                 .join(order.delivery, delivery)
@@ -51,10 +43,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
                 .where(
                         memberIdEq(condition.getMemberId()),
                         deliveryStatusEq(condition.getDeliveryStatus()),
-                        orderDateBetween(
-                                condition.getOrderDateFrom(),
-                                condition.getOrderDateTo()
-                        ),
+                        orderDateBetween(condition.getOrderDateFrom(), condition.getOrderDateTo()),
                         paymentMethodEq(condition.getPaymentMethod()),
                         minPriceGoe(condition.getMinPrice())
                 )
@@ -62,16 +51,9 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-    }
 
-    private Long getTotalFromCountQueryBy(OrderSearchCondition condition) {
-        JPAQuery<Long> countQuery = createCountQueryBy(condition);
-
-        return Optional.ofNullable(countQuery.fetchOne()).orElse(0L);
-    }
-
-    private JPAQuery<Long> createCountQueryBy(OrderSearchCondition condition) {
-        return queryFactory
+        Long total = Optional.ofNullable(
+                queryFactory
                 .select(order.count())
                 .from(order)
                 .join(order.member, member)
@@ -80,22 +62,22 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
                 .where(
                         memberIdEq(condition.getMemberId()),
                         deliveryStatusEq(condition.getDeliveryStatus()),
-                        orderDateBetween(
-                                condition.getOrderDateFrom(),
-                                condition.getOrderDateTo()
-                        ),
+                        orderDateBetween(condition.getOrderDateFrom(), condition.getOrderDateTo()),
                         paymentMethodEq(condition.getPaymentMethod()),
                         minPriceGoe(condition.getMinPrice())
-                );
+                )
+                .fetchOne()).orElse(0L);
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     private OrderSpecifier<?> getOrderSpecifier(String sortBy) {
-        if (!StringUtils.hasText(sortBy))
+        if (!StringUtils.hasText(sortBy)) {
             return order.id.desc();
-
+        }
         return switch (sortBy) {
-            case "priceDesc" -> order.totalPrice.desc();
-            case "priceAsc" -> order.totalPrice.asc();
+            case "priceDesc" -> order.totalAmount.desc();
+            case "priceAsc" -> order.totalAmount.asc();
             default -> order.id.desc();
         };
     }
@@ -109,9 +91,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     }
 
     private BooleanExpression orderDateBetween(LocalDate dateFrom, LocalDate dateTo) {
-        if (dateFrom == null || dateTo == null)
-            return null;
-
+        if (dateFrom == null || dateTo == null) return null;
         return order.createdAt.between(dateFrom.atStartOfDay(), dateTo.atTime(LocalTime.MAX));
     }
 
@@ -120,7 +100,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
     }
 
     private BooleanExpression minPriceGoe(Integer minPrice) {
-        return minPrice != null ? order.totalPrice.goe(minPrice) : null;
+        return minPrice != null ? order.totalAmount.goe(minPrice) : null;
     }
 
 }

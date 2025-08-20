@@ -36,3 +36,6 @@ GET http://localhost:8080/api/orders/stats?page=100&minAmount=30000
 ###
 # @connection-timeout 5 m
 GET http://localhost:8080/api/orders/statistics/member-stats?page=0&size=1&minAmount=10000
+
+###
+GET http://localhost:8080/api/orders/v2?memberId=13415&minAmount=30000&year=2025&keyword=Product

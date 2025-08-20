@@ -15,13 +15,13 @@ public class SimpleOrderResponse {
     private Long orderId;
     private String orderNo;
     private Long memberId;
-    private int totalPrice;
+    private long totalPrice;
     private DeliveryStatus deliveryStatus;
     private Address address;
     private LocalDateTime orderDate;
 
     @Builder
-    private SimpleOrderResponse(Long orderId, String orderNo, Long memberId, int totalPrice, DeliveryStatus deliveryStatus, Address address, LocalDateTime orderDate) {
+    private SimpleOrderResponse(Long orderId, String orderNo, Long memberId, long totalPrice, DeliveryStatus deliveryStatus, Address address, LocalDateTime orderDate) {
         this.orderId = orderId;
         this.orderNo = orderNo;
         this.memberId = memberId;
@@ -36,7 +36,7 @@ public class SimpleOrderResponse {
                 .orderId(order.getId())
                 .orderNo(order.getNo())
                 .memberId(order.getMember().getId())
-                .totalPrice(order.getTotalPrice())
+                .totalPrice(order.getTotalAmount())
                 .deliveryStatus(order.getDeliveryStatus())
                 .address(order.getAddress())
                 .orderDate(order.getCreatedAt())

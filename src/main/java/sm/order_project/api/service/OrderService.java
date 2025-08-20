@@ -3,10 +3,12 @@ package sm.order_project.api.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sm.order_project.api.controller.OrderController;
 import sm.order_project.api.domain.OrderStats;
 import sm.order_project.api.dto.OrderStatisticsDto;
 import sm.order_project.api.dto.response.OrderDetailResponse;
@@ -18,6 +20,7 @@ import sm.order_project.api.repository.OrderRepository;
 import sm.order_project.api.repository.OrderStatsRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -75,4 +78,13 @@ public class OrderService {
         }
     }
 
+    public Page<SimpleOrderResponse> search(Pageable pageable, OrderController.Condition condition) {
+        Page<Order> pagedOrders = orderQueryRepository.findAllPaged(condition, pageable);
+
+        List<SimpleOrderResponse> response = pagedOrders.getContent().stream()
+                .map(SimpleOrderResponse::of) // GetOrderDto -> GetOrderHttp.Response
+                .toList();
+
+        return new PageImpl<>(response, pageable, pagedOrders.getTotalElements());
+    }
 }

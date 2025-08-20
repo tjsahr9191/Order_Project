@@ -21,7 +21,7 @@ INSERT INTO payment (created_at, updated_at, payment_method, tid)
 VALUES (NOW(), NOW(), 'CARD', 'TID_ABC123');
 
 -- 첫 번째 주문 추가 (홍길동 회원, 3개 상품 주문)
-INSERT INTO orders (created_at, updated_at, member_id, delivery_id, payment_id, name, city, street, zipcode, no, total_price, tid)
+INSERT INTO orders (created_at, updated_at, member_id, delivery_id, payment_id, name, city, street, zipcode, no, total_amount, tid)
 VALUES (NOW(), NOW(), 1, 1, 1, '홍길동', '서울', '세종대로', '04524', 'ORD001', 1630000, 'TID_ABC123');
 
 -- 첫 번째 주문에 대한 상세 내역 추가
@@ -38,7 +38,7 @@ INSERT INTO payment (created_at, updated_at, payment_method, tid)
 VALUES (NOW(), NOW(), 'MONEY', 'TID_XYZ789');
 
 -- 두 번째 주문 추가 (이순신 회원, 2개 상품 주문)
-INSERT INTO orders (created_at, updated_at, member_id, delivery_id, payment_id, name, city, street, zipcode, no, total_price, tid)
+INSERT INTO orders (created_at, updated_at, member_id, delivery_id, payment_id, name, city, street, zipcode, no, total_amount, tid)
 VALUES (NOW(), NOW(), 2, 2, 2, '이순신', '부산', '해운대로', '48094', 'ORD002', 670000, 'TID_XYZ789');
 
 -- 두 번째 주문에 대한 상세 내역 추가

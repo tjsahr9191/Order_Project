@@ -23,7 +23,7 @@ public class OrderDetailResponse {
         return OrderDetailResponse.builder()
                 .orderId(order.getId())
                 .orderDate(order.getCreatedAt())
-                .totalAmount(order.calculateTotalAmount())
+                .totalAmount(order.getTotalAmount())
                 .deliveryStatus(order.getDeliveryStatus())
                 .productInfos(createProductInfos(order))
                 .build();

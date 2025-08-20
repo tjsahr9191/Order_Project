@@ -18,17 +18,13 @@ public class Payment extends BaseEntity {
     @Column(name = "payment_id")
     private Long id;
 
-    @OneToOne(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Order order;
-
     private String tid;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
     @Builder
-    public Payment(Order order, String tid, PaymentMethod paymentMethod) {
-        this.order = order;
+    public Payment(String tid, PaymentMethod paymentMethod) {
         this.tid = tid;
         this.paymentMethod = paymentMethod;
     }

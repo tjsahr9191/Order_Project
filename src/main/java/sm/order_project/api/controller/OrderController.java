@@ -1,8 +1,12 @@
 package sm.order_project.api.controller;
 
+import lombok.Builder;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sm.order_project.api.common.ApiResponse;
@@ -29,6 +33,40 @@ public class OrderController {
     public ApiResponse<Page<SimpleOrderResponse>> getOrders(
             @ModelAttribute OrderSearchCondition condition, Pageable pageable) {
         return ApiResponse.ok(orderService.findOrdersByCondition(condition, pageable));
+    }
+
+    @GetMapping("/v2")
+    public ApiResponse<Page<SimpleOrderResponse>> getOrders2(
+            @RequestParam Long memberId,
+            @RequestParam Long minAmount,
+            @RequestParam(name = "year", required = false) String year,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @PageableDefault(size = 5, sort = {"createdAt"}, direction = Sort.Direction.DESC) Pageable pageable) {
+
+        Condition condition = Condition.builder()
+                .memberId(memberId)
+                .minAmount(minAmount)
+                .year(year)
+                .keyword(keyword)
+                .build();
+
+        return ApiResponse.ok(orderService.search(pageable, condition));
+    }
+
+    @Getter
+    public static class Condition {
+        private String year;
+        private String keyword;
+        private Long memberId;
+        private Long minAmount;
+
+        @Builder
+        public Condition(String year, String keyword, Long memberId, Long minAmount) {
+            this.year = year;
+            this.keyword = keyword;
+            this.memberId = memberId;
+            this.minAmount = minAmount;
+        }
     }
 
 //    @GetMapping("/statistics/member-stats")
