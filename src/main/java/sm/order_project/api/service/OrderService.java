@@ -2,6 +2,7 @@ package sm.order_project.api.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -65,6 +66,7 @@ public class OrderService {
     }
 
 //    @Scheduled(cron = "0 */3 * * * *")
+    @SchedulerLock(name = "ScheduledTask_run")
     @Transactional
     public void refreshOrderStatistics() {
         log.info("Starting order statistics refresh at {}", LocalDateTime.now());

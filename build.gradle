@@ -57,6 +57,9 @@ dependencies {
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
     implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
+
+    implementation 'net.javacrumbs.shedlock:shedlock-spring:6.10.0' // 최신 버전 확인 후 사용
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:6.10.0'
 }
 
 tasks.named('test') {
