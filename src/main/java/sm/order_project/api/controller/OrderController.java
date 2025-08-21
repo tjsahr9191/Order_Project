@@ -69,13 +69,13 @@ public class OrderController {
         }
     }
 
-//    @GetMapping("/statistics/member-stats")
-//    public ApiResponse<Page<OrderStatisticsDto>> getMemberStatistics(
-//            @RequestParam(required = false) Long minAmount,
-//            Pageable pageable) {
-//
-//        return ApiResponse.ok(orderService.getOrderStatistics(minAmount, pageable));
-//    }
+    @GetMapping("/statistics/stats/v1")
+    public ApiResponse<Page<OrderStatisticsDto>> getMemberStatistics(
+            @RequestParam(required = false) Long minAmount,
+            Pageable pageable) {
+
+        return ApiResponse.ok(orderService.getOrderStatisticsv1(minAmount, pageable));
+    }
 
     @GetMapping("/stats")
     public ApiResponse<Page<OrderStatisticsDto>> getOrderStatistics(

@@ -56,13 +56,13 @@ public class OrderService {
         return orderStats.map(OrderStatisticsDto::of);
     }
 
-//    public Page<OrderStatisticsDto> getOrderStatistics(Long minAmount, Pageable pageable) {
-//        if (minAmount == null) {
-//            minAmount = 0L;
-//        }
-//
-//        return orderQueryRepository.getOrderStatisticsQuerydsl(minAmount, pageable);
-//    }
+    public Page<OrderStatisticsDto> getOrderStatisticsv1(Long minAmount, Pageable pageable) {
+        if (minAmount == null) {
+            minAmount = 0L;
+        }
+
+        return orderQueryRepository.getOrderStatisticsQuerydsl(minAmount, pageable);
+    }
 
 //    @Scheduled(cron = "0 */3 * * * *")
     @Transactional

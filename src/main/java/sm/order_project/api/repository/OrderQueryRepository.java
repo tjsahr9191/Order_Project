@@ -41,34 +41,32 @@ public class OrderQueryRepository {
     }
 
     public Page<OrderStatisticsDto> getOrderStatisticsQuerydsl(Long minAmount, Pageable pageable) {
-//        List<OrderStatisticsDto> content = queryFactory
-//                .select(new QOrderStatisticsDto(
-//                        member.id,
-//                        order.id.count(),
-//                        order.totalPrice.longValue().sum(),
-//                        order.totalPrice.avg()
-//                ))
-//                .from(order)
-//                .join(order.member, member)
-//                .groupBy(member.id)
-//                .having(order.totalPrice.sum().goe(minAmount))
-//                .orderBy(order.totalPrice.sum().desc())
-//                .offset(pageable.getOffset())
-//                .limit(pageable.getPageSize())
-//                .fetch();
-//
-//        JPAQuery<Long> countQuery = queryFactory
-//                .select(member.id.count())
-//                .from(order)
-//                .join(order.member, member)
-//                .groupBy(member.id)
-//                .having(order.totalPrice.sum().goe(minAmount));
-//
-//        Long total = (long) countQuery.fetch().size();
-//
-//        return new PageImpl<>(content, pageable, total);
+        List<OrderStatisticsDto> content = queryFactory
+                .select(new QOrderStatisticsDto(
+                        member.id,
+                        order.id.count(),
+                        order.totalAmount.longValue().sum(),
+                        order.totalAmount.avg()
+                ))
+                .from(order)
+                .join(order.member, member)
+                .groupBy(member.id)
+                .having(order.totalAmount.sum().goe(minAmount))
+                .orderBy(order.totalAmount.sum().desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
 
-        return null;
+        JPAQuery<Long> countQuery = queryFactory
+                .select(member.id.count())
+                .from(order)
+                .join(order.member, member)
+                .groupBy(member.id)
+                .having(order.totalAmount.sum().goe(minAmount));
+
+        Long total = (long) countQuery.fetch().size();
+
+        return new PageImpl<>(content, pageable, total);
     }
 
     public Page<Order> findAllPaged(OrderController.Condition condition, Pageable pageable) { // Condition DTO가 있다고 가정
