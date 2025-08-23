@@ -4,10 +4,17 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import sm.order_project.api.common.DateTimeHolder;
+import sm.order_project.api.exception.CustomLogicException;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.*;
 import static lombok.AccessLevel.PROTECTED;
+import static sm.order_project.api.exception.ErrorCode.QUANTITY_EXCEEDED;
 
 @Entity
 @Getter
@@ -43,7 +50,13 @@ public class OrderDetail extends BaseEntity {
         this.order = order;
     }
 
-    public long calculateTotalPrice() {
-        return (long) price * quantity;
+    public static OrderDetail create(Order order, Product product, Long price, Long quantity, String statusCode, DateTimeHolder dateTimeHolder) {
+        return OrderDetail.builder()
+                .order(order)
+                .product(product)
+                .price(Math.toIntExact(price))
+                .quantity(Math.toIntExact(quantity))
+                .build();
     }
+
 }

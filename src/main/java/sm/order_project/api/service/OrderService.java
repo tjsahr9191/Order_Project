@@ -1,5 +1,6 @@
 package sm.order_project.api.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
@@ -9,19 +10,26 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sm.order_project.api.common.DateTimeHolder;
 import sm.order_project.api.controller.OrderController;
-import sm.order_project.api.domain.OrderStats;
+import sm.order_project.api.domain.*;
+import sm.order_project.api.dto.CreateOrderDto;
+import sm.order_project.api.dto.CreateOrderRequest;
 import sm.order_project.api.dto.OrderStatisticsDto;
 import sm.order_project.api.dto.response.OrderDetailResponse;
 import sm.order_project.api.dto.request.OrderSearchCondition;
 import sm.order_project.api.dto.response.SimpleOrderResponse;
-import sm.order_project.api.domain.Order;
-import sm.order_project.api.repository.OrderQueryRepository;
-import sm.order_project.api.repository.OrderRepository;
-import sm.order_project.api.repository.OrderStatsRepository;
+import sm.order_project.api.kakao.KakaoPayConfig;
+import sm.order_project.api.kakao.KakaoPayReadyRequest;
+import sm.order_project.api.kakao.KakaoPayReadyResponse;
+import sm.order_project.api.kakao.KakaoPayService;
+import sm.order_project.api.repository.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+
+import static sm.order_project.api.kakao.KakaoPayConfig.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +40,13 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderQueryRepository orderQueryRepository;
     private final OrderStatsRepository orderStatsRepository;
+    private final KakaoPayService kakaoPayService;
+    private final KakaoPayConfig kakaoPayConfig;
+    private final MemberRepository memberRepository;
+    private final DateTimeHolder dateTimeHolder;
+    private final ProductRepository productRepository;
+    private final OrderDetailRepository orderDetailRepository;
+
 
     public OrderDetailResponse findOrderDetails(Long id) {
 
@@ -88,5 +103,75 @@ public class OrderService {
                 .toList();
 
         return new PageImpl<>(response, pageable, pagedOrders.getTotalElements());
+    }
+
+    public KakaoPayReadyResponse ready(@Valid CreateOrderRequest request, String orderNo, Long memberId) {
+        KakaoPayReadyRequest kakaoReadyRequest = createKakaoReadyRequest(orderNo, request, memberId);
+        KakaoPayReadyResponse ready = kakaoPayService.ready(kakaoReadyRequest);
+        return ready;
+    }
+
+    private KakaoPayReadyRequest createKakaoReadyRequest(String orderNo, CreateOrderRequest request, Long memberId) {
+
+        String cid = ONE_TIME_CID;
+        String approvalUrl = kakaoPayConfig.createApprovalUrl("/payment");
+        String failUrl = kakaoPayConfig.getRedirectFailUrl();
+        String cancelUrl = kakaoPayConfig.getRedirectCancelUrl();
+
+        return request.toKakaoReadyRequest(orderNo, memberId, cid, approvalUrl, failUrl, cancelUrl);
+    }
+
+    public void create(CreateOrderDto createOrderDto) {
+
+        // 1. Order 생성
+        Order order = orderRepository.save(createOrder(createOrderDto));
+
+        // 2. OrderDetail 생성 (연관관계 매핑 여기서 해결)
+        orderDetailRepository.saveAll(createOrderDetails(createOrderDto.getProductValues(), order));
+
+        // 4. Product 의 stock 감소
+        order.stockDecrease();
+    }
+
+    private List<OrderDetail> createOrderDetails(List<CreateOrderDto.ProductDto> productValues, Order order) {
+
+        List<OrderDetail> orderDetails = new ArrayList<>();
+
+        for (CreateOrderDto.ProductDto productValue : productValues) {
+
+            Product product = productRepository.findById(productValue.getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+            // 쿠폰 사용 안 한 경우 그냥 null 저장
+            Long quantity = productValue.getQuantity();
+            Long price = product.getPrice();
+//            String tid = order.getTid();
+//            String orderNo = order.getNo();
+
+            // OrderDetail 엔티티 생성
+            OrderDetail orderDetail =
+                    OrderDetail.create(order, product, price, quantity, StatusCodeType.ORDER_INIT.getCode(), dateTimeHolder);
+
+            // orderDetails 에 추가
+            orderDetails.add(orderDetail);
+
+            // 연관관계 매핑
+            order.addOrderDetail(orderDetail);
+        }
+
+        return orderDetails;
+    }
+
+    private Order createOrder(CreateOrderDto createOrderDto) {
+        Member member = memberRepository.findById(createOrderDto.getMemberId())
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+        Address address = member.getAddress();
+        String orderName = createOrderDto.getOrderName();
+        String orderNo = createOrderDto.getOrderNo();
+        Long totalOrderPrice = createOrderDto.getTotalOrderPrice();
+        Long realOrderPrice = createOrderDto.getRealOrderPrice();
+        Long totalDiscountPrice = createOrderDto.getTotalDiscountPrice();
+        String tid = createOrderDto.getTid();
+
+        return Order.create(member, address, orderName, orderNo, totalOrderPrice, realOrderPrice, totalDiscountPrice, tid);
     }
 }

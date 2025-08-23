@@ -3,6 +3,7 @@ package sm.order_project.api.domain;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.OneToMany;
+import sm.order_project.api.common.DateTimeHolder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,4 +23,7 @@ public class OrderDetails {
         return Collections.unmodifiableList(orderDetails);
     }
 
+    public void stockDecrease() {
+        orderDetails.forEach(o -> o.getProduct().decrease((long) o.getQuantity()));
+    }
 }

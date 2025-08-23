@@ -1,5 +1,6 @@
 package sm.order_project.api.controller;
 
+import jakarta.validation.Valid;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,12 +11,17 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sm.order_project.api.common.ApiResponse;
+import sm.order_project.api.dto.CreateOrderRequest;
+import sm.order_project.api.dto.CreateOrderResponse;
 import sm.order_project.api.dto.OrderStatisticsDto;
 import sm.order_project.api.dto.response.OrderDetailResponse;
 import sm.order_project.api.dto.request.OrderSearchCondition;
 import sm.order_project.api.dto.response.OrderStatisticsResponse;
 import sm.order_project.api.dto.response.SimpleOrderResponse;
+import sm.order_project.api.kakao.KakaoPayReadyResponse;
 import sm.order_project.api.service.OrderService;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -82,6 +88,24 @@ public class OrderController {
             @RequestParam(required = false) Long minAmount,
             Pageable pageable) {
         return ApiResponse.ok(orderService.getOrderStatistics(minAmount, pageable));
+    }
+
+    @PostMapping
+    public ApiResponse<CreateOrderResponse> createOrder (
+            @RequestParam Long memberId,
+            @Valid @RequestBody CreateOrderRequest request) {
+
+        // 1. orderNo 생성
+        String orderNo = UUID.randomUUID().toString();
+
+        // 2. 카카오페이 결제 준비 요청
+        KakaoPayReadyResponse kakaoReadyResponse = orderService.ready(request, orderNo, memberId);
+        String tid = kakaoReadyResponse.getTid();
+
+        // 3. 주문 생성
+        orderService.create(request.toDto(orderNo, tid, memberId));
+
+        return ApiResponse.ok(CreateOrderResponse.of(kakaoReadyResponse));
     }
 
 }

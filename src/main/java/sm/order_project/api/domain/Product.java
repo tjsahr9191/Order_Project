@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import sm.order_project.api.exception.CustomLogicException;
 
 import static lombok.AccessLevel.PROTECTED;
+import static sm.order_project.api.exception.ErrorCode.OUT_OF_STOCK;
 
 @Entity
 @Getter
@@ -33,4 +35,14 @@ public class Product extends BaseEntity {
         this.productNo = productNo;
     }
 
+    public void decrease(Long quantity) {
+        verifyStockAvailable(quantity);
+        stock -= quantity;
+    }
+
+    public void verifyStockAvailable(Long quantity) {
+        if (stock - quantity < 0) {
+            throw CustomLogicException.createBadRequestError(OUT_OF_STOCK);
+        }
+    }
 }

@@ -46,9 +46,13 @@ public class QOrder extends EntityPathBase<Order> {
 
     public final QPayment payment;
 
+    public final NumberPath<Long> realPrice = createNumber("realPrice", Long.class);
+
     public final StringPath tid = createString("tid");
 
     public final NumberPath<Long> totalAmount = createNumber("totalAmount", Long.class);
+
+    public final NumberPath<Long> totalDiscount = createNumber("totalDiscount", Long.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;

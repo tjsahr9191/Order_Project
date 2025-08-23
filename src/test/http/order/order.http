@@ -44,4 +44,24 @@ GET http://localhost:8080/api/orders/statistics/stats/v1?page=100&minAmount=3000
 ###
 GET http://localhost:8080/api/orders/v2?memberId=13415&minAmount=30000&year=2025&keyword=Product
 
-###
+### 주문 생성 요청 (김유신 회원)
+POST http://localhost:8080/api/orders?memberId=3
+Content-Type: application/json
+#Authorization: Bearer <USER_ACCESS_TOKEN>
+
+{
+  "totalAmount": 230000,
+  "orderName": "키보드 외 1건",
+  "productValues": [
+    {
+      "productId": 3,
+      "price": 80000,
+      "quantity": 2
+    },
+    {
+      "productId": 5,
+      "price": 70000,
+      "quantity": 1
+    }
+  ]
+}

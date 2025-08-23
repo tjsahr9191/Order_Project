@@ -25,7 +25,7 @@ public class Order extends BaseEntity {
     private Member member;
 
     @Embedded // OrderDetails 클래스를 이 엔티티에 포함시킴
-    private OrderDetails orderDetails;
+    private OrderDetails orderDetails = new OrderDetails();
 
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "payment_id")
@@ -46,9 +46,12 @@ public class Order extends BaseEntity {
 
     private Long totalAmount;
 
+    private Long realPrice; // 실 결제 금액
+
+    private Long totalDiscount; // 총 할인 금액 (쿠폰,포인트,멤버쉽)
+
     @Builder
-    public Order(OrderDetails orderDetails, Member member, Payment payment, Delivery delivery, Address address, String name, String no, String tid, Long totalAmount) {
-        this.orderDetails = orderDetails;
+    private Order(Member member, Payment payment, Delivery delivery, Address address, String name, String no, String tid, Long totalAmount, Long realPrice, Long totalDiscount) {
         this.member = member;
         this.payment = payment;
         this.delivery = delivery;
@@ -57,6 +60,21 @@ public class Order extends BaseEntity {
         this.no = no;
         this.tid = tid;
         this.totalAmount = totalAmount;
+        this.realPrice = realPrice;
+        this.totalDiscount = totalDiscount;
+    }
+
+    public static Order create(Member member, Address address, String orderName, String orderNo, Long totalPrice, Long realPrice, Long totalDiscount, String tid) {
+        return Order.builder()
+                .member(member)
+                .address(address)
+                .name(orderName)
+                .no(orderNo)
+                .totalAmount(totalPrice)
+                .realPrice(realPrice)
+                .totalDiscount(totalDiscount)
+                .tid(tid)
+                .build();
     }
 
     public void addOrderDetail(OrderDetail orderDetail) {
@@ -66,6 +84,10 @@ public class Order extends BaseEntity {
 
     public DeliveryStatus getDeliveryStatus() {
         return delivery.getDeliveryStatus();
+    }
+
+    public void stockDecrease() {
+        orderDetails.stockDecrease();
     }
 
 }

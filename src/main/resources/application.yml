@@ -25,3 +25,9 @@ spring:
   sql:
     init:
       mode: always
+
+payment:
+  kakao:
+    secret_key_dev : "DEVC712E3F2EB64FCBDEA8116096E91C9E8F8C4C"
+
+host: "http://localhost:8080"
