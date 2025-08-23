@@ -79,7 +79,7 @@ public class QOrder extends EntityPathBase<Order> {
         this.delivery = inits.isInitialized("delivery") ? new QDelivery(forProperty("delivery"), inits.get("delivery")) : null;
         this.member = inits.isInitialized("member") ? new QMember(forProperty("member"), inits.get("member")) : null;
         this.orderDetails = inits.isInitialized("orderDetails") ? new QOrderDetails(forProperty("orderDetails")) : null;
-        this.payment = inits.isInitialized("payment") ? new QPayment(forProperty("payment")) : null;
+        this.payment = inits.isInitialized("payment") ? new QPayment(forProperty("payment"), inits.get("payment")) : null;
     }
 
 }

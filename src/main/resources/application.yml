@@ -7,7 +7,7 @@ spring:
   datasource:
     driver-class-name: org.h2.Driver
 #    url: jdbc:h2:tcp://localhost/~/data/testdb
-    url: jdbc:h2:file:~/data/testdb
+    url: jdbc:h2:file:~/data/testdb;AUTO_SERVER=TRUE
 #    url: jdbc:h2:mem:testdb  # 인메모리 H2 DB 사용
     username: sa
     password:

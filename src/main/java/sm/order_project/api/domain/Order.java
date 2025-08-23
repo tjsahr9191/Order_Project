@@ -90,4 +90,9 @@ public class Order extends BaseEntity {
         orderDetails.stockDecrease();
     }
 
+    public void linkPayment(Payment payment) {
+        this.payment = payment;
+//        payment.linkOrder(this);
+    }
+
 }
