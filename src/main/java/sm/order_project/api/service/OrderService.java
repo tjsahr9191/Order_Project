@@ -150,7 +150,8 @@ public class OrderService {
         //========================================================================================================
 
         // products 리스트를 Map으로 변환하여 사용하면 편리합니다.
-        Map<Long, Product> productMap = products.stream().collect(Collectors.toMap(Product::getId, product -> product));
+        Map<Long, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, product -> product));
 
         return productValues.stream().map(pv -> {
             Product product = productMap.get(pv.getProductId());

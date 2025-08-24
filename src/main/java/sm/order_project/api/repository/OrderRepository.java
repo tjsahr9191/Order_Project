@@ -24,6 +24,10 @@ public interface OrderRepository extends JpaRepository<Order, Long>, OrderReposi
             "WHERE o.no = :orderNo")
     Optional<Order> findByNoWithDetailsAndProduct(@Param("orderNo") String orderNo);
 
+    @Query(value = "SELECT GET_LOCK(:lockName, :timeoutSeconds)", nativeQuery = true)
+    int getLock(@Param("lockName") String lockName, @Param("timeoutSeconds") int timeoutSeconds);
 
+    @Query(value = "SELECT RELEASE_LOCK(:lockName)", nativeQuery = true)
+    int releaseLock(@Param("lockName") String lockName);
 
 }

@@ -16,6 +16,7 @@ import sm.order_project.api.repository.MemberRepository;
 import sm.order_project.api.repository.OrderDetailRepository;
 import sm.order_project.api.repository.OrderRepository;
 import sm.order_project.api.repository.ProductRepository;
+import sm.order_project.api.service.Facade.NamedLockOrderFacade;
 import sm.order_project.api.service.Facade.OptimisticLockOrderFacade;
 import sm.order_project.api.service.OrderService;
 import sm.order_project.config.IntegrationTest;
@@ -32,6 +33,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @Slf4j
 @IntegrationTest
 public class OrderServiceTest {
+
+    @Autowired
+    private NamedLockOrderFacade namedLockOrderFacade;
 
     @Autowired
     private OptimisticLockOrderFacade optimisticLockOrderFacade;
@@ -213,6 +217,57 @@ public class OrderServiceTest {
         log.info("실행 시간 : {}ms", executionTime);
 
         // 3. 비관적 락 테스트와 검증 내용은 동일 (결과는 같아야 함)
+        // 가장 중요한 검증: 동시성 제어가 성공하여 최종 재고가 정확히 0이 되어야 한다.
+        assertThat(updatedProduct.getStock()).isZero();
+        assertThat(successCount.get()).isEqualTo(INITIAL_STOCK);
+        assertThat(orderCount).isEqualTo(INITIAL_STOCK);
+    }
+
+    @Test
+    @DisplayName("Named Lock과 Facade 재시도 로직을 통해 동시 주문 요청을 올바르게 처리한다")
+    void handleConcurrentOrdersCorrectlyWithNamedLock() throws InterruptedException {
+        // given
+        int numberOfThreads = 100; // 재고(INITIAL_STOCK)보다 많은 동시 요청
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch latch = new CountDownLatch(numberOfThreads);
+        AtomicInteger successCount = new AtomicInteger(0);
+
+        // when
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i < numberOfThreads; i++) {
+            executorService.submit(() -> {
+                try {
+                    // Facade의 메소드를 호출하여 재시도 로직을 함께 테스트
+                    CreateOrderDto requestDto = createOrderDtoForTestProduct(1L);
+
+                    // ★★★ 이 부분만 OptimisticLock -> NamedLock Facade로 변경 ★★★
+                    namedLockOrderFacade.createOrder(requestDto);
+
+                    successCount.incrementAndGet();
+                } catch (Exception e) {
+                    // Facade에서 락 획득 최종 실패 시 예외가 발생할 수 있음
+                    log.error("주문 생성 최종 실패: {}", e.getMessage());
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+        executorService.shutdown();
+
+        long executionTime = System.currentTimeMillis() - startTime;
+
+        // then
+        Product updatedProduct = productRepository.findById(testProduct.getId()).orElseThrow();
+        long orderCount = orderRepository.count();
+
+        System.out.println("초기 재고: " + INITIAL_STOCK);
+        System.out.println("성공한 주문 요청 수 (Atomic): " + successCount.get());
+        System.out.println("DB에 저장된 최종 재고: " + updatedProduct.getStock());
+        System.out.println("DB에 생성된 주문 수: " + orderCount);
+        log.info("실행 시간 : {}ms", executionTime);
+
         // 가장 중요한 검증: 동시성 제어가 성공하여 최종 재고가 정확히 0이 되어야 한다.
         assertThat(updatedProduct.getStock()).isZero();
         assertThat(successCount.get()).isEqualTo(INITIAL_STOCK);
