@@ -28,6 +28,8 @@ import sm.order_project.api.repository.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static sm.order_project.api.kakao.KakaoPayConfig.*;
 
@@ -106,9 +108,7 @@ public class OrderService {
     }
 
     public KakaoPayReadyResponse ready(@Valid CreateOrderRequest request, String orderNo, Long memberId) {
-        KakaoPayReadyRequest kakaoReadyRequest = createKakaoReadyRequest(orderNo, request, memberId);
-        KakaoPayReadyResponse ready = kakaoPayService.ready(kakaoReadyRequest);
-        return ready;
+        return kakaoPayService.ready(createKakaoReadyRequest(orderNo, request, memberId));
     }
 
     private KakaoPayReadyRequest createKakaoReadyRequest(String orderNo, CreateOrderRequest request, Long memberId) {
@@ -121,45 +121,70 @@ public class OrderService {
         return request.toKakaoReadyRequest(orderNo, memberId, cid, approvalUrl, failUrl, cancelUrl);
     }
 
+    @Transactional
     public void create(CreateOrderDto createOrderDto) {
 
         // 1. Order 생성
         Order order = orderRepository.save(createOrder(createOrderDto));
 
         // 2. OrderDetail 생성 (연관관계 매핑 여기서 해결)
-        orderDetailRepository.saveAll(createOrderDetails(createOrderDto.getProductValues(), order));
+        List<OrderDetail> orderDetails = createOrderDetails(createOrderDto.getProductValues(), order);
+        orderDetailRepository.saveAll(orderDetails);
 
         // 4. Product 의 stock 감소
         order.stockDecrease();
     }
 
+    // Product 조회 로직을 수정한 createOrderDetails 메소드 (예시)
     private List<OrderDetail> createOrderDetails(List<CreateOrderDto.ProductDto> productValues, Order order) {
+        List<Long> productIds = productValues.stream()
+                .map(CreateOrderDto.ProductDto::getProductId)
+                .collect(Collectors.toList());
 
-        List<OrderDetail> orderDetails = new ArrayList<>();
+        // ★★★ 바로 이 지점에서 PESSIMISTIC_WRITE Lock이 적용됩니다. ★★★
+        List<Product> products = productRepository.findAllById(productIds);
 
-        for (CreateOrderDto.ProductDto productValue : productValues) {
+        // products 리스트를 Map으로 변환하여 사용하면 편리합니다.
+        Map<Long, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, product -> product));
 
-            Product product = productRepository.findById(productValue.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-            // 쿠폰 사용 안 한 경우 그냥 null 저장
-            Long quantity = productValue.getQuantity();
-            Long price = product.getPrice();
-//            String tid = order.getTid();
-//            String orderNo = order.getNo();
-
-            // OrderDetail 엔티티 생성
-            OrderDetail orderDetail =
-                    OrderDetail.create(order, product, price, quantity, StatusCodeType.ORDER_INIT.getCode(), dateTimeHolder);
-
-            // orderDetails 에 추가
-            orderDetails.add(orderDetail);
-
-            // 연관관계 매핑
-            order.addOrderDetail(orderDetail);
-        }
-
-        return orderDetails;
+        return productValues.stream()
+                .map(pv -> {
+                    Product product = productMap.get(pv.getProductId());
+                    OrderDetail orderDetail = OrderDetail.create(order, product, pv.getQuantity(), StatusCodeType.ORDER_INIT.getCode(), dateTimeHolder);
+                    order.addOrderDetail(orderDetail);
+                    return orderDetail;
+                })
+                .collect(Collectors.toList());
     }
+
+//    private List<OrderDetail> createOrderDetails(List<CreateOrderDto.ProductDto> productValues, Order order) {
+//
+//        List<OrderDetail> orderDetails = new ArrayList<>();
+//
+//        for (CreateOrderDto.ProductDto productValue : productValues) {
+//
+//            Product product = productRepository.findById(productValue.getProductId())
+//                    .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+//            // 쿠폰 사용 안 한 경우 그냥 null 저장
+//            Long quantity = productValue.getQuantity();
+//            Long price = product.getPrice();
+////            String tid = order.getTid();
+////            String orderNo = order.getNo();
+//
+//            // OrderDetail 엔티티 생성
+//            OrderDetail orderDetail =
+//                    OrderDetail.create(order, product, price, quantity, StatusCodeType.ORDER_INIT.getCode(), dateTimeHolder);
+//
+//            // orderDetails 에 추가
+//            orderDetails.add(orderDetail);
+//
+//            // 연관관계 매핑
+//            order.addOrderDetail(orderDetail);
+//        }
+//
+//        return orderDetails;
+//    }
 
     private Order createOrder(CreateOrderDto createOrderDto) {
         Member member = memberRepository.findById(createOrderDto.getMemberId())

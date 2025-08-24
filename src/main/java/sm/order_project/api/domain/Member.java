@@ -32,4 +32,5 @@ public class Member extends BaseEntity {
         this.address = address;
     }
 
+
 }

@@ -27,6 +27,9 @@ public class Product extends BaseEntity {
 
     private String productNo;
 
+    @Version
+    private Long version;
+
     @Builder
     public Product(String name, Long price, Long stock, String productNo) {
         this.name = name;

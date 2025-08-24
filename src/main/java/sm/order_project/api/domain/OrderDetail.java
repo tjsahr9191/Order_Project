@@ -50,11 +50,11 @@ public class OrderDetail extends BaseEntity {
         this.order = order;
     }
 
-    public static OrderDetail create(Order order, Product product, Long price, Long quantity, String statusCode, DateTimeHolder dateTimeHolder) {
+    public static OrderDetail create(Order order, Product product, Long quantity, String statusCode, DateTimeHolder dateTimeHolder) {
         return OrderDetail.builder()
                 .order(order)
                 .product(product)
-                .price(Math.toIntExact(price))
+                .price(Math.toIntExact(product.getPrice()))
                 .quantity(Math.toIntExact(quantity))
                 .build();
     }
