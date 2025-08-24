@@ -24,4 +24,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>, OrderReposi
             "WHERE o.no = :orderNo")
     Optional<Order> findByNoWithDetailsAndProduct(@Param("orderNo") String orderNo);
 
+
+
 }

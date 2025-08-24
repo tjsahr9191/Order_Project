@@ -126,26 +126,28 @@ public class OrderService {
         orderDetailRepository.saveAll(orderDetails);
 
         // 4. Product 의 stock 감소
-//        order.stockDecrease();
+        order.stockDecrease();
     }
 
     // Product 조회 로직을 수정한 createOrderDetails 메소드 (예시)
     private List<OrderDetail> createOrderDetails(List<CreateOrderDto.ProductDto> productValues, Order order) {
         List<Long> productIds = productValues.stream().map(CreateOrderDto.ProductDto::getProductId).collect(Collectors.toList());
 
-        // ★★★ 바로 이 지점에서 PESSIMISTIC_WRITE Lock이 적용됩니다. ★★★
         List<Product> products = productRepository.findAllById(productIds);
 
-        products.forEach(product -> {
-            productValues.stream()
-                    .filter(productDto -> productDto.getProductId().equals(product.getId()))
-                    .findFirst()
-                    .ifPresent(productDto -> {
-                        product.decrease(productDto.getQuantity());
-            });
-        });
-
-        productRepository.saveAllAndFlush(products);
+        //========================================================================================================
+        // ★★★ Optimistic Lock -> update, insert 순서 바꿔도 JPA 떄문에 X락 먼저 획득 안된다는 것을 보여줌
+        // -> saveAllAndFlush를 호출해서 먼저 X락을 획득하고 S락을 획득하는 방식으로 바꿀 것!! ★★★
+//        products.forEach(product -> {
+//            productValues.stream()
+//                    .filter(productDto -> productDto.getProductId().equals(product.getId()))
+//                    .findFirst()
+//                    .ifPresent(productDto -> {
+//                        product.decrease(productDto.getQuantity());
+//            });
+//        });
+//        productRepository.saveAllAndFlush(products);
+        //========================================================================================================
 
         // products 리스트를 Map으로 변환하여 사용하면 편리합니다.
         Map<Long, Product> productMap = products.stream().collect(Collectors.toMap(Product::getId, product -> product));

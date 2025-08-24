@@ -20,7 +20,6 @@ public class OptimisticLockOrderFacade {
     // 최대 재시도 횟수 (무한 루프 방지)
     private static final int MAX_RETRIES = 1000;
 
-//    @Transactional
     public void createOrder(CreateOrderDto createOrderDto) throws InterruptedException {
         int retryCount = 0;
 
