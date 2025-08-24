@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest
-@Import({TestDatabaseConfig.class, TestRedisConfig.class})
+//@Import({TestDatabaseConfig.class, TestRedisConfig.class})
+@Import({TestRedisConfig.class})
 public @interface IntegrationTest {
 } 

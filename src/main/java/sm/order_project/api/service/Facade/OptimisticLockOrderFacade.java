@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import sm.order_project.api.dto.CreateOrderDto;
 import sm.order_project.api.service.OrderService;
 
@@ -15,10 +16,11 @@ public class OptimisticLockOrderFacade {
     private final OrderService orderService;
 
     // 재시도 사이의 대기 시간 (밀리초)
-    private static final long RETRY_DELAY_MS = 50;
+    private static final long RETRY_DELAY_MS = 100;
     // 최대 재시도 횟수 (무한 루프 방지)
     private static final int MAX_RETRIES = 1000;
 
+//    @Transactional
     public void createOrder(CreateOrderDto createOrderDto) throws InterruptedException {
         int retryCount = 0;
 

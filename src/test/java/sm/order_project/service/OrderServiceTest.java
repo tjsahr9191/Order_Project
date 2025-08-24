@@ -1,6 +1,7 @@
 package sm.order_project.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -55,7 +56,7 @@ public class OrderServiceTest {
     private final int INITIAL_STOCK = 50;
 
     @BeforeEach
-    @Commit
+//    @Commit
     void setUp() {
         // 테스트 실행 전 데이터 초기화
         orderDetailRepository.deleteAllInBatch();
@@ -84,6 +85,7 @@ public class OrderServiceTest {
                         .build()
         );
     }
+
 
     @Test
     @DisplayName("단일 스레드에서는 재고가 정확하게 차감된다")
@@ -165,7 +167,6 @@ public class OrderServiceTest {
 
     @Test
     @DisplayName("Optimistic Lock과 Facade 재시도 로직을 통해 동시 주문 요청을 올바르게 처리한다")
-//    @Transactional(timeout = 10)
     void handleConcurrentOrdersCorrectlyWithOptimisticLock() throws InterruptedException {
         // given
         int numberOfThreads = 100; // 재고(50개)보다 많은 동시 요청
@@ -193,6 +194,12 @@ public class OrderServiceTest {
 
         latch.await();
         executorService.shutdown();
+
+//        if (!executorService.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS)) {
+//            log.error("스레드 풀이 시간 내에 종료되지 않았습니다.");
+//            executorService.shutdownNow(); // 시간 초과 시 강제 종료
+//        }
+
         long executionTime = System.currentTimeMillis() - startTime;
 
         // then
