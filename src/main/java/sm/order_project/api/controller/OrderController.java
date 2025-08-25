@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,16 +20,19 @@ import sm.order_project.api.dto.request.OrderSearchCondition;
 import sm.order_project.api.dto.response.OrderStatisticsResponse;
 import sm.order_project.api.dto.response.SimpleOrderResponse;
 import sm.order_project.api.kakao.KakaoPayReadyResponse;
+import sm.order_project.api.service.Facade.TestOrderFacade;
 import sm.order_project.api.service.OrderService;
 
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/orders")
 public class OrderController {
 
     private final OrderService orderService;
+    private final TestOrderFacade testOrderFacade;
 
     @GetMapping("/{id}")
     public ApiResponse<OrderDetailResponse> getOrderDetails(@PathVariable Long id) {
@@ -95,11 +99,15 @@ public class OrderController {
             @RequestParam Long memberId,
             @Valid @RequestBody CreateOrderRequest request) {
 
+//        CreateOrderResponse createOrderResponse = testOrderFacade.ready(memberId, request);
         // 1. orderNo 생성
         String orderNo = UUID.randomUUID().toString();
 
         // 2. 카카오페이 결제 준비 요청
+//        long startTime = System.currentTimeMillis();
         KakaoPayReadyResponse kakaoReadyResponse = orderService.ready(request, orderNo, memberId);
+//        long executionTime = System.currentTimeMillis() - startTime;
+//        log.info("걸린 시간 = {}",  executionTime);
         String tid = kakaoReadyResponse.getTid();
 
         // 3. 주문 생성

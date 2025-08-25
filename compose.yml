@@ -11,7 +11,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'    # CPU 2코어로 제한
+          cpus: '3'    # CPU 2코어로 제한
           memory: 1G   # 전체 메모리 1GB로 제한
         reservations:
           cpus: '0.5'
@@ -47,7 +47,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2"  # 최대 2개의 코어 할당
+          cpus: "3"  # 최대 2개의 코어 할당
           memory: 2GB   # 최대 2GB 메모리 할당
 
   prometheus:

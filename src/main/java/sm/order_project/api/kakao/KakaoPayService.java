@@ -26,8 +26,6 @@ public class KakaoPayService {
 
         RestClient restClient = setup();
 
-        log.info("카카오페이 요청 금액: {}", request.getTotalAmount());
-
         return restClient.post()
                 .uri(READY_END_POINT)
                 .body(request)

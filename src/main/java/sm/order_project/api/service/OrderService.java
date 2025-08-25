@@ -133,7 +133,7 @@ public class OrderService {
     private List<OrderDetail> createOrderDetails(List<CreateOrderDto.ProductDto> productValues, Order order) {
         List<Long> productIds = productValues.stream().map(CreateOrderDto.ProductDto::getProductId).collect(Collectors.toList());
 
-        List<Product> products = productRepository.findAllById(productIds);
+        List<Product> products = productRepository.findAllByIdInWithPessimisticLock(productIds);
 
         //========================================================================================================
         // ★★★ Optimistic Lock -> update, insert 순서 바꿔도 JPA 떄문에 X락 먼저 획득 안된다는 것을 보여줌

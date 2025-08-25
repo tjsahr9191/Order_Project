@@ -65,3 +65,25 @@ Content-Type: application/json
     }
   ]
 }
+
+###
+POST http://localhost:5000/ready
+Content-Type: application/json
+#Authorization: Bearer <USER_ACCESS_TOKEN>
+
+{
+    "totalAmount": 230000,
+    "orderName": "키보드 외 1건",
+    "productValues": [
+      {
+        "productId": 3,
+        "price": 80000,
+        "quantity": 2
+      },
+        {
+        "productId": 5,
+        "price": 70000,
+        "quantity": 1
+      }
+    ]
+}

@@ -9,7 +9,8 @@ import org.springframework.context.annotation.Configuration;
 public class KakaoPayConfig {
 
     // 카카오페이 BASE_URL
-    public static final String KAKAO_BASE_URL = "https://open-api.kakaopay.com/online/v1/payment";
+//    public static final String KAKAO_BASE_URL = "https://open-api.kakaopay.com/online/v1/payment";
+    public static final String KAKAO_BASE_URL = "http://localhost:5000";
 
     // 카카오페이 API 엔드포인트
     public static final String READY_END_POINT = "/ready";
