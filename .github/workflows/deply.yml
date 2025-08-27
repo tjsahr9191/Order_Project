@@ -47,11 +47,14 @@ jobs:
           host: ${{ secrets.EC2_ORDER_SERVER_HOST }}
           username: ${{ secrets.EC2_ORDER_SERVER_USERNAME }}
           key: ${{ secrets.EC2_ORDER_SERVER_PRIVATE_KEY }}
-          env:
-            REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-            RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
-            RDS_USERNAME: ${{ secrets.RDS_USERNAME }}
-            RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
+          RDS_USERNAME: ${{ secrets.RDS_USERNAME }}
+          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+
+          envs: REGISTRY,RDS_ENDPOINT,RDS_USERNAME,RDS_PASSWORD
+
           script_stop: true
           script: |
             docker stop order-server || true
