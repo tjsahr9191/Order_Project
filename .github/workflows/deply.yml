@@ -33,7 +33,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Docker 이미지 생성
-        run: docker compose -f compose-dev.yml build
+        run: docker build --platform linux/amd64 -t order-server .
 
       - name: Docker 이미지에 Tag 붙이기
         run: docker tag order-server ${{ steps.login-ecr.outputs.registry }}/order-server:latest
@@ -47,10 +47,20 @@ jobs:
           host: ${{ secrets.EC2_ORDER_SERVER_HOST }}
           username: ${{ secrets.EC2_ORDER_SERVER_USERNAME }}
           key: ${{ secrets.EC2_ORDER_SERVER_PRIVATE_KEY }}
+          env:
+            REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
+            RDS_USERNAME: ${{ secrets.RDS_USERNAME }}
+            RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
           script_stop: true
           script: |
             docker stop order-server || true
             docker rm order-server || true
-            docker pull ${{ steps.login-ecr.outputs.registry }}/order-server:latest
-            docker run -d --name order-server -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/order-server:latest
+            docker pull $REGISTRY/order-server:latest
+            docker run -d \
+              -e RDS_ENDPOINT=$RDS_ENDPOINT \
+              -e RDS_USERNAME=$RDS_USERNAME \
+              -e RDS_PASSWORD=$RDS_PASSWORD \
+              --name order-server -p 8080:8080 $REGISTRY/order-server:latest
+            docker image prune -f
             
