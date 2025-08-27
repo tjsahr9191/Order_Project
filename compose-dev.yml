@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    image: order-server
     container_name: spring-app
     ports:
       - "8080:8080"
