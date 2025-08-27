@@ -1,21 +1,19 @@
 spring:
   datasource:
-    url: jdbc:mysql://${RDS_ENDPOINT:localhost}:3306/order_project?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
-    username: order_project_user
+    url: jdbc:mysql://${RDS_ENDPOINT:localhost}:3306/order_project?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    username: ${RDS_USERNAME:order_project_user}
     password: ${RDS_PASSWORD:password1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      maximum-pool-size: 8
-      minimum-idle: 8
+#    hikari:
+#      maximum-pool-size: 8
+#      minimum-idle: 8
   # // TODO: Named Lock ? ?? ?? ??? ?????
   #    hikari:
   #      maximum-pool-size: 64
   jpa:
     defer-datasource-initialization: true
     hibernate:
-#      ddl-auto: create
       ddl-auto: none
-#      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -24,10 +22,10 @@ spring:
     #        session_factory:
     #          statement_inspector: ding.co.backendportfolio.chapter5.config.QueryCountInspector
     database-platform: org.hibernate.dialect.MySQL8Dialect
-  data:
-    redis:
-      host: redis
-      port: 6379
+#  data:
+#    redis:
+#      host: redis
+#      port: 6379
   sql:
     init:
       mode: never
@@ -53,10 +51,10 @@ management:
 
 server:
   tomcat:
-    connection-timeout: 120000      # 120?
+    connection-timeout: 120000
   servlet:
     session:
-      timeout: 120s                # ?? ????
+      timeout: 120s
     encoding:
       charset: UTF-8
       enabled: true

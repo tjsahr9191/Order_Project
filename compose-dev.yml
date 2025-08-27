@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    container_name: spring-app
+    ports:
+      - "8080:8080"
+    # .env 파일로부터 환경 변수를 읽어옵니다.
+    env_file:
+      - ./.env
+    # 환경 변수를 사용하여 Spring Datasource 설정을 구성합니다.
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:mysql://${RDS_ENDPOINT}:${DB_PORT}/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
