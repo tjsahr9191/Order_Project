@@ -53,6 +53,7 @@ jobs:
             docker rm order-server || true
             docker pull ${{ steps.login-ecr.outputs.registry }}/order-server:latest
             docker run -d \
+              -e SPRING_PROFILES_ACTIVE=dev \
               -e RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }} \
               -e RDS_USERNAME=${{ secrets.RDS_USERNAME }} \
               -e RDS_PASSWORD=${{ secrets.RDS_PASSWORD }} \
