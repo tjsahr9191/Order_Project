@@ -41,29 +41,20 @@ jobs:
       - name: ECR에 Docker 이미지 Push하기
         run: docker push ${{ steps.login-ecr.outputs.registry }}/order-server:latest
 
-      - name: SSH로 EC2에 접속하기
+      - name: SSH로 EC2에 접속 및 배포하기
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_ORDER_SERVER_HOST }}
           username: ${{ secrets.EC2_ORDER_SERVER_USERNAME }}
           key: ${{ secrets.EC2_ORDER_SERVER_PRIVATE_KEY }}
-
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
-          RDS_USERNAME: ${{ secrets.RDS_USERNAME }}
-          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-
-          envs: REGISTRY,RDS_ENDPOINT,RDS_USERNAME,RDS_PASSWORD
-
           script_stop: true
           script: |
             docker stop order-server || true
             docker rm order-server || true
-            docker pull $REGISTRY/order-server:latest
+            docker pull ${{ steps.login-ecr.outputs.registry }}/order-server:latest
             docker run -d \
-              -e RDS_ENDPOINT=$RDS_ENDPOINT \
-              -e RDS_USERNAME=$RDS_USERNAME \
-              -e RDS_PASSWORD=$RDS_PASSWORD \
-              --name order-server -p 8080:8080 $REGISTRY/order-server:latest
+              -e RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }} \
+              -e RDS_USERNAME=${{ secrets.RDS_USERNAME }} \
+              -e RDS_PASSWORD=${{ secrets.RDS_PASSWORD }} \
+              --name order-server -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/order-server:latest
             docker image prune -f
-            
