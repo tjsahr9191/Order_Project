@@ -49,6 +49,7 @@ jobs:
           key: ${{ secrets.EC2_ORDER_SERVER_PRIVATE_KEY }}
           script_stop: true
           script: |
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 667308168571.dkr.ecr.ap-northeast-2
             docker stop order-server || true
             docker rm order-server || true
             docker pull ${{ steps.login-ecr.outputs.registry }}/order-server:latest
