@@ -36,7 +36,7 @@ public class OrderController {
 
     @GetMapping("/index")
     public String index() {
-        return "index";
+        return "good!!";
     }
 
     @GetMapping("/{id}")
