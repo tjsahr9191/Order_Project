@@ -34,6 +34,11 @@ public class OrderController {
     private final OrderService orderService;
     private final TestOrderFacade testOrderFacade;
 
+    @GetMapping("/index")
+    public String index() {
+        return "index";
+    }
+
     @GetMapping("/{id}")
     public ApiResponse<OrderDetailResponse> getOrderDetails(@PathVariable Long id) {
         return ApiResponse.ok(orderService.findOrderDetails(id));
