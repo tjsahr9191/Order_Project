@@ -53,3 +53,4 @@ jobs:
             docker rm order-server || true
             docker pull ${{ steps.login-ecr.outputs.registry }}/order-server:latest
             docker run -d --name order-server -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/order-server:latest
+            

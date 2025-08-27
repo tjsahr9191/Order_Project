@@ -11,6 +11,6 @@ services:
     # 환경 변수를 사용하여 Spring Datasource 설정을 구성합니다.
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:mysql://${RDS_ENDPOINT}:${DB_PORT}/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
-      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:mysql://${RDS_ENDPOINT}:${RDS_PORT}/${RDS_NAME}?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+      SPRING_DATASOURCE_USERNAME: ${RDS_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${RDS_PASSWORD}
