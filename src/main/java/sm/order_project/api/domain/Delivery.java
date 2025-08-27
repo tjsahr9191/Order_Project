@@ -14,7 +14,7 @@ import static lombok.AccessLevel.PROTECTED;
 public class
 Delivery extends BaseEntity{
 
-    @Id
+    @Id @Column(name = "delivery_id")
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
