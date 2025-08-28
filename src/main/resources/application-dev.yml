@@ -6,8 +6,8 @@ spring:
     password: ${RDS_PASSWORD:password1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 40
-      minimum-idle: 40
+      maximum-pool-size: 50
+      minimum-idle: 50
   # // TODO: Named Lock ? ?? ?? ??? ?????
   #    hikari:
   #      maximum-pool-size: 64
