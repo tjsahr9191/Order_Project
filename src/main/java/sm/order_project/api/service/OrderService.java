@@ -78,7 +78,7 @@ public class OrderService {
         return orderQueryRepository.getOrderStatisticsQuerydsl(minAmount, pageable);
     }
 
-    @Scheduled(cron = "0 */3 * * * *")
+//    @Scheduled(cron = "0 */3 * * * *")
     @SchedulerLock(name = "ScheduledTask_run")
     @Transactional
     public void refreshOrderStatistics() {
