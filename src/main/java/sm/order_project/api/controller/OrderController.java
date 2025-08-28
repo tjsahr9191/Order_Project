@@ -105,21 +105,20 @@ public class OrderController {
             @RequestParam Long memberId,
             @Valid @RequestBody CreateOrderRequest request) {
 
-//        CreateOrderResponse createOrderResponse = testOrderFacade.ready(memberId, request);
-        // 1. orderNo 생성
-        String orderNo = UUID.randomUUID().toString();
+        CreateOrderResponse createOrderResponse = testOrderFacade.ready(memberId, request);
+//        // 1. orderNo 생성
+//        String orderNo = UUID.randomUUID().toString();
+//
+//        // 2. 카카오페이 결제 준비 요청
+//        KakaoPayReadyResponse kakaoReadyResponse = orderService.ready(request, orderNo, memberId);
+//        String tid = kakaoReadyResponse.getTid();
+//
+//        // 3. 주문 생성
+//        orderService.create(request.toDto(orderNo, tid, memberId));
+//
+//        return ApiResponse.ok(CreateOrderResponse.of(kakaoReadyResponse));
 
-        // 2. 카카오페이 결제 준비 요청
-//        long startTime = System.currentTimeMillis();
-        KakaoPayReadyResponse kakaoReadyResponse = orderService.ready(request, orderNo, memberId);
-//        long executionTime = System.currentTimeMillis() - startTime;
-//        log.info("걸린 시간 = {}",  executionTime);
-        String tid = kakaoReadyResponse.getTid();
-
-        // 3. 주문 생성
-        orderService.create(request.toDto(orderNo, tid, memberId));
-
-        return ApiResponse.ok(CreateOrderResponse.of(kakaoReadyResponse));
+        return ApiResponse.ok(createOrderResponse);
     }
 
 }
