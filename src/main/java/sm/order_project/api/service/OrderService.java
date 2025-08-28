@@ -118,7 +118,9 @@ public class OrderService {
 //    @Transactional
     public void create(CreateOrderDto createOrderDto) {
 
-        Delivery delivery = Delivery.builder().build();
+        Delivery delivery = Delivery.builder()
+                .deliveryStatus(DeliveryStatus.ORDER)
+                .build();
         deliveryRepository.save(delivery);
 
         // 1. Order 생성
@@ -174,6 +176,7 @@ public class OrderService {
         Long realOrderPrice = createOrderDto.getRealOrderPrice();
         Long totalDiscountPrice = createOrderDto.getTotalDiscountPrice();
         String tid = createOrderDto.getTid();
+        delivery.setAddress(address);
 
         return Order.create(member, address, orderName, orderNo, totalOrderPrice, realOrderPrice, totalDiscountPrice, tid, delivery);
     }

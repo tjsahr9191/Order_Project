@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -18,6 +19,7 @@ Delivery extends BaseEntity{
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
+    @Setter
     @Embedded
     private Address address;
 
