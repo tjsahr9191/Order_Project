@@ -67,6 +67,7 @@ public class Order extends BaseEntity {
     public static Order create(Member member, Address address, String orderName, String orderNo, Long totalPrice, Long realPrice, Long totalDiscount, String tid) {
         return Order.builder()
                 .member(member)
+                .delivery(Delivery.builder().build())
                 .address(address)
                 .name(orderName)
                 .no(orderNo)

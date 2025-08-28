@@ -17,7 +17,7 @@ export const options = {
 export default function () {
     // 1. URL과 쿼리 파라미터 설정
     const memberId = randomIntBetween(1, 100000);
-    const url = `http://localhost:8080/api/orders?memberId=${memberId}`;
+    const url = `http://15.165.251.129:8080/api/orders?memberId=${memberId}`;
 
     // 2. Request Body의 productValues 배열 생성
     // DTO의 List<CreateOrderRequest.ProductInfo>에 해당합니다.
