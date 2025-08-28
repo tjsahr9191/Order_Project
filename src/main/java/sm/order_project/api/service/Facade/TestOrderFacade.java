@@ -21,7 +21,7 @@ public class TestOrderFacade {
     private final OrderService orderService;
     private final MockOrderService mockOrderService;
 
-    @Transactional
+//    @Transactional
     public CreateOrderResponse ready(Long memberId, @Valid CreateOrderRequest request) {
         // 1. orderNo 생성
         String orderNo = UUID.randomUUID().toString();
