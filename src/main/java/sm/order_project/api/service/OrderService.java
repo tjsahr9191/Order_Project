@@ -115,7 +115,7 @@ public class OrderService {
         return request.toKakaoReadyRequest(orderNo, memberId, cid, approvalUrl, failUrl, cancelUrl);
     }
 
-//    @Transactional
+    @Transactional
     public void create(CreateOrderDto createOrderDto) {
 
         Delivery delivery = Delivery.builder()
