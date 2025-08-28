@@ -64,10 +64,10 @@ public class Order extends BaseEntity {
         this.totalDiscount = totalDiscount;
     }
 
-    public static Order create(Member member, Address address, String orderName, String orderNo, Long totalPrice, Long realPrice, Long totalDiscount, String tid) {
+    public static Order create(Member member, Address address, String orderName, String orderNo, Long totalPrice, Long realPrice, Long totalDiscount, String tid, Delivery delivery) {
         return Order.builder()
                 .member(member)
-                .delivery(Delivery.builder().build())
+                .delivery(delivery)
                 .address(address)
                 .name(orderName)
                 .no(orderNo)

@@ -45,6 +45,7 @@ public class OrderService {
     private final MemberRepository memberRepository;
     private final DateTimeHolder dateTimeHolder;
     private final ProductRepository productRepository;
+    private final DeliveryRepository deliveryRepository;
     private final OrderDetailRepository orderDetailRepository;
 
 
@@ -117,8 +118,11 @@ public class OrderService {
 //    @Transactional
     public void create(CreateOrderDto createOrderDto) {
 
+        Delivery delivery = Delivery.builder().build();
+        deliveryRepository.save(delivery);
+
         // 1. Order 생성
-        Order order = orderRepository.save(createOrder(createOrderDto));
+        Order order = orderRepository.save(createOrder(createOrderDto, delivery));
 
         // 2. OrderDetail 생성 (연관관계 매핑 여기서 해결)
         List<OrderDetail> orderDetails = createOrderDetails(createOrderDto.getProductValues(), order);
@@ -161,7 +165,7 @@ public class OrderService {
         }).collect(Collectors.toList());
     }
 
-    private Order createOrder(CreateOrderDto createOrderDto) {
+    private Order createOrder(CreateOrderDto createOrderDto, Delivery delivery) {
         Member member = memberRepository.findById(createOrderDto.getMemberId()).orElseThrow(() -> new IllegalArgumentException("Member not found"));
         Address address = member.getAddress();
         String orderName = createOrderDto.getOrderName();
@@ -171,6 +175,6 @@ public class OrderService {
         Long totalDiscountPrice = createOrderDto.getTotalDiscountPrice();
         String tid = createOrderDto.getTid();
 
-        return Order.create(member, address, orderName, orderNo, totalOrderPrice, realOrderPrice, totalDiscountPrice, tid);
+        return Order.create(member, address, orderName, orderNo, totalOrderPrice, realOrderPrice, totalDiscountPrice, tid, delivery);
     }
 }
