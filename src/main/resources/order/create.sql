@@ -112,7 +112,7 @@ CREATE TABLE order_detail (
 
 -- 7. 주문 통계 (order_stats) 테이블 (주석 처리된 INSERT 문 기준)
 -- CREATE TABLE order_stats (
---     stats_id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+--     order_stats_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
 --     member_id        BIGINT NOT NULL,
 --     email            VARCHAR(255) NOT NULL,
 --     order_count      INT NOT NULL,
