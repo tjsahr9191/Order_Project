@@ -7,6 +7,7 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sm.order_project.api.common.DateTimeHolder;
@@ -77,7 +78,7 @@ public class OrderService {
         return orderQueryRepository.getOrderStatisticsQuerydsl(minAmount, pageable);
     }
 
-    //    @Scheduled(cron = "0 */3 * * * *")
+    @Scheduled(cron = "0 */3 * * * *")
     @SchedulerLock(name = "ScheduledTask_run")
     @Transactional
     public void refreshOrderStatistics() {
