@@ -124,6 +124,7 @@ public class OrderService {
                 .build();
         deliveryRepository.save(delivery);
 
+
         // 1. Order 생성
         Order order = orderRepository.save(createOrder(createOrderDto, delivery));
 
