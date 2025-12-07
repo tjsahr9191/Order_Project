@@ -1,18 +1,33 @@
 package sm.order_project.api.service;
 
+import static sm.order_project.api.kakao.KakaoPayConfig.ONE_TIME_CID;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import sm.order_project.api.common.DateTimeHolder;
 import sm.order_project.api.controller.OrderController;
-import sm.order_project.api.domain.*;
+import sm.order_project.api.domain.Address;
+import sm.order_project.api.domain.Delivery;
+import sm.order_project.api.domain.DeliveryStatus;
+import sm.order_project.api.domain.Member;
+import sm.order_project.api.domain.Order;
+import sm.order_project.api.domain.OrderDetail;
+import sm.order_project.api.domain.OrderStats;
+import sm.order_project.api.domain.Product;
+import sm.order_project.api.domain.StatusCodeType;
 import sm.order_project.api.dto.CreateOrderDto;
 import sm.order_project.api.dto.CreateOrderRequest;
 import sm.order_project.api.dto.OrderStatisticsDto;
@@ -23,18 +38,17 @@ import sm.order_project.api.kakao.KakaoPayConfig;
 import sm.order_project.api.kakao.KakaoPayReadyRequest;
 import sm.order_project.api.kakao.KakaoPayReadyResponse;
 import sm.order_project.api.kakao.KakaoPayService;
-import sm.order_project.api.repository.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static sm.order_project.api.kakao.KakaoPayConfig.ONE_TIME_CID;
+import sm.order_project.api.repository.DeliveryRepository;
+import sm.order_project.api.repository.MemberRepository;
+import sm.order_project.api.repository.OrderDetailRepository;
+import sm.order_project.api.repository.OrderQueryRepository;
+import sm.order_project.api.repository.OrderRepository;
+import sm.order_project.api.repository.OrderStatsRepository;
+import sm.order_project.api.repository.ProductRepository;
 
 @Service
 @RequiredArgsConstructor
-//@Transactional(readOnly = true)
+// @Transactional(readOnly = true)
 @Slf4j
 public class OrderService {
 
@@ -49,10 +63,10 @@ public class OrderService {
     private final DeliveryRepository deliveryRepository;
     private final OrderDetailRepository orderDetailRepository;
 
-
     public OrderDetailResponse findOrderDetails(Long id) {
 
-        Order foundOrder = orderRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        Order foundOrder = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         return OrderDetailResponse.of(foundOrder);
     }
@@ -65,7 +79,8 @@ public class OrderService {
     }
 
     public Page<OrderStatisticsDto> getOrderStatistics(Long minAmount, Pageable pageable) {
-        Page<OrderStats> orderStats = orderStatsRepository.findByTotalAmountGreaterThanEqual(minAmount != null ? minAmount : 0L, pageable);
+        Page<OrderStats> orderStats = orderStatsRepository
+                .findByTotalAmountGreaterThanEqual(minAmount != null ? minAmount : 0L, pageable);
 
         return orderStats.map(OrderStatisticsDto::of);
     }
@@ -78,7 +93,7 @@ public class OrderService {
         return orderQueryRepository.getOrderStatisticsQuerydsl(minAmount, pageable);
     }
 
-//    @Scheduled(cron = "0 */3 * * * *")
+    // @Scheduled(cron = "0 */3 * * * *")
     @SchedulerLock(name = "ScheduledTask_run")
     @Transactional
     public void refreshOrderStatistics() {
@@ -96,7 +111,9 @@ public class OrderService {
     public Page<SimpleOrderResponse> search(Pageable pageable, OrderController.Condition condition) {
         Page<Order> pagedOrders = orderQueryRepository.findAllPaged(condition, pageable);
 
-        List<SimpleOrderResponse> response = pagedOrders.getContent().stream().map(SimpleOrderResponse::of) // GetOrderDto -> GetOrderHttp.Response
+        List<SimpleOrderResponse> response = pagedOrders.getContent().stream().map(SimpleOrderResponse::of) // GetOrderDto
+                                                                                                            // ->
+                                                                                                            // GetOrderHttp.Response
                 .toList();
 
         return new PageImpl<>(response, pageable, pagedOrders.getTotalElements());
@@ -124,7 +141,6 @@ public class OrderService {
                 .build();
         deliveryRepository.save(delivery);
 
-
         // 1. Order 생성
         Order order = orderRepository.save(createOrder(createOrderDto, delivery));
 
@@ -139,23 +155,24 @@ public class OrderService {
 
     // Product 조회 로직을 수정한 createOrderDetails 메소드 (예시)
     private List<OrderDetail> createOrderDetails(List<CreateOrderDto.ProductDto> productValues, Order order) {
-        List<Long> productIds = productValues.stream().map(CreateOrderDto.ProductDto::getProductId).collect(Collectors.toList());
+        List<Long> productIds = productValues.stream().map(CreateOrderDto.ProductDto::getProductId)
+                .collect(Collectors.toList());
 
-        List<Product> products = productRepository.findAllByIdInWithPessimisticLock(productIds);
+        List<Product> products = productRepository.findAllByIdInWithOptimisticLock(productIds);
 
-        //========================================================================================================
+        // ========================================================================================================
         // ★★★ Optimistic Lock -> update, insert 순서 바꿔도 JPA 떄문에 X락 먼저 획득 안된다는 것을 보여줌
         // -> saveAllAndFlush를 호출해서 먼저 X락을 획득하고 S락을 획득하는 방식으로 바꿀 것!! ★★★
-//        products.forEach(product -> {
-//            productValues.stream()
-//                    .filter(productDto -> productDto.getProductId().equals(product.getId()))
-//                    .findFirst()
-//                    .ifPresent(productDto -> {
-//                        product.decrease(productDto.getQuantity());
-//            });
-//        });
-//        productRepository.saveAllAndFlush(products);
-        //========================================================================================================
+        products.forEach(product -> {
+            productValues.stream()
+                    .filter(productDto -> productDto.getProductId().equals(product.getId()))
+                    .findFirst()
+                    .ifPresent(productDto -> {
+                        product.decrease(productDto.getQuantity());
+                    });
+        });
+        productRepository.saveAllAndFlush(products);
+        // ========================================================================================================
 
         // products 리스트를 Map으로 변환하여 사용하면 편리합니다.
         Map<Long, Product> productMap = products.stream()
@@ -163,14 +180,16 @@ public class OrderService {
 
         return productValues.stream().map(pv -> {
             Product product = productMap.get(pv.getProductId());
-            OrderDetail orderDetail = OrderDetail.create(order, product, pv.getQuantity(), StatusCodeType.ORDER_INIT.getCode(), dateTimeHolder);
+            OrderDetail orderDetail = OrderDetail.create(order, product, pv.getQuantity(),
+                    StatusCodeType.ORDER_INIT.getCode(), dateTimeHolder);
             order.addOrderDetail(orderDetail);
             return orderDetail;
         }).collect(Collectors.toList());
     }
 
     private Order createOrder(CreateOrderDto createOrderDto, Delivery delivery) {
-        Member member = memberRepository.findById(createOrderDto.getMemberId()).orElseThrow(() -> new IllegalArgumentException("Member not found"));
+        Member member = memberRepository.findById(createOrderDto.getMemberId())
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
         Address address = member.getAddress();
         String orderName = createOrderDto.getOrderName();
         String orderNo = createOrderDto.getOrderNo();
@@ -180,6 +199,7 @@ public class OrderService {
         String tid = createOrderDto.getTid();
         delivery.setAddress(address);
 
-        return Order.create(member, address, orderName, orderNo, totalOrderPrice, realOrderPrice, totalDiscountPrice, tid, delivery);
+        return Order.create(member, address, orderName, orderNo, totalOrderPrice, realOrderPrice, totalDiscountPrice,
+                tid, delivery);
     }
 }
