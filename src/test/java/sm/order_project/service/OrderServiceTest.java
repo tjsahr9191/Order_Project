@@ -118,56 +118,9 @@ public class OrderServiceTest {
     // assertThat(orderCount).isEqualTo(INITIAL_STOCK);
     // }
     //
-    @Test
-    @DisplayName("Pessimistic Lock을 통해 여러 스레드의 동시 주문 요청을 올바르게 처리한다")
-    void handleConcurrentOrdersCorrectlyWithPessimisticLock() throws InterruptedException {
-        // given
-        int numberOfThreads = 100; // 재고(50개)보다 많은 동시 요청
-        ExecutorService executorService = Executors.newFixedThreadPool(32);
-        CountDownLatch latch = new CountDownLatch(numberOfThreads);
-        AtomicInteger successCount = new AtomicInteger(0);
-
-        // when
-        long startTime = System.currentTimeMillis();
-        for (int i = 0; i < numberOfThreads; i++) {
-            executorService.submit(() -> {
-                try {
-                    CreateOrderDto requestDto = createOrderDtoForTestProduct(1L);
-                    orderService.create(requestDto);
-                    successCount.incrementAndGet();
-                } catch (Exception e) {
-                    log.info("재고 부족으로 인한 예상된 주문 실패");
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-
-        latch.await();
-        executorService.shutdown();
-
-        long executionTime = System.currentTimeMillis() - startTime;
-
-        // then
-        Product updatedProduct = productRepository.findById(testProduct.getId()).orElseThrow();
-        long orderCount = orderRepository.count();
-
-        System.out.println("초기 재고: " + INITIAL_STOCK);
-        System.out.println("성공한 주문 요청 수 (Atomic): " + successCount.get());
-        System.out.println("DB에 저장된 최종 재고: " + updatedProduct.getStock());
-        System.out.println("DB에 생성된 주문 수: " + orderCount);
-        log.info("실행 시간 : {}ms", executionTime);
-
-        // 가장 중요한 검증: 동시성 제어가 성공하여 최종 재고가 정확히 0이 되어야 한다.
-        assertThat(updatedProduct.getStock()).isZero();
-        assertThat(successCount.get()).isEqualTo(INITIAL_STOCK);
-        assertThat(orderCount).isEqualTo(INITIAL_STOCK);
-    }
-
-    //
     // @Test
-    // @DisplayName("Optimistic Lock과 Facade 재시도 로직을 통해 동시 주문 요청을 올바르게 처리한다")
-    // void handleConcurrentOrdersCorrectlyWithOptimisticLock() throws
+    // @DisplayName("Pessimistic Lock을 통해 여러 스레드의 동시 주문 요청을 올바르게 처리한다")
+    // void handleConcurrentOrdersCorrectlyWithPessimisticLock() throws
     // InterruptedException {
     // // given
     // int numberOfThreads = 100; // 재고(50개)보다 많은 동시 요청
@@ -180,13 +133,11 @@ public class OrderServiceTest {
     // for (int i = 0; i < numberOfThreads; i++) {
     // executorService.submit(() -> {
     // try {
-    // // 2. Facade의 메소드를 호출하여 재시도 로직을 함께 테스트
     // CreateOrderDto requestDto = createOrderDtoForTestProduct(1L);
-    // optimisticLockOrderFacade.createOrder(requestDto);
+    // orderService.create(requestDto);
     // successCount.incrementAndGet();
     // } catch (Exception e) {
-    // // Facade에서 최대 재시도 횟수를 초과하면 예외가 발생할 수 있음
-    // log.error("주문 생성 최종 실패: {}", e.getMessage());
+    // log.info("재고 부족으로 인한 예상된 주문 실패");
     // } finally {
     // latch.countDown();
     // }
@@ -195,12 +146,6 @@ public class OrderServiceTest {
     //
     // latch.await();
     // executorService.shutdown();
-    //
-    //// if (!executorService.awaitTermination(10,
-    // java.util.concurrent.TimeUnit.SECONDS)) {
-    //// log.error("스레드 풀이 시간 내에 종료되지 않았습니다.");
-    //// executorService.shutdownNow(); // 시간 초과 시 강제 종료
-    //// }
     //
     // long executionTime = System.currentTimeMillis() - startTime;
     //
@@ -215,12 +160,67 @@ public class OrderServiceTest {
     // System.out.println("DB에 생성된 주문 수: " + orderCount);
     // log.info("실행 시간 : {}ms", executionTime);
     //
-    // // 3. 비관적 락 테스트와 검증 내용은 동일 (결과는 같아야 함)
     // // 가장 중요한 검증: 동시성 제어가 성공하여 최종 재고가 정확히 0이 되어야 한다.
     // assertThat(updatedProduct.getStock()).isZero();
     // assertThat(successCount.get()).isEqualTo(INITIAL_STOCK);
     // assertThat(orderCount).isEqualTo(INITIAL_STOCK);
     // }
+
+    @Test
+    @DisplayName("Optimistic Lock과 Facade 재시도 로직을 통해 동시 주문 요청을 올바르게 처리한다")
+    void handleConcurrentOrdersCorrectlyWithOptimisticLock() throws InterruptedException {
+        // given
+        int numberOfThreads = 100; // 재고(50개)보다 많은 동시 요청
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch latch = new CountDownLatch(numberOfThreads);
+        AtomicInteger successCount = new AtomicInteger(0);
+
+        // when
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i < numberOfThreads; i++) {
+            executorService.submit(() -> {
+                try {
+                    // 2. Facade의 메소드를 호출하여 재시도 로직을 함께 테스트
+                    CreateOrderDto requestDto = createOrderDtoForTestProduct(1L);
+                    optimisticLockOrderFacade.createOrder(requestDto);
+                    successCount.incrementAndGet();
+                } catch (Exception e) {
+                    // Facade에서 최대 재시도 횟수를 초과하면 예외가 발생할 수 있음
+                    log.error("주문 생성 최종 실패: {}", e.getMessage());
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+        executorService.shutdown();
+
+        if (!executorService.awaitTermination(10,
+                java.util.concurrent.TimeUnit.SECONDS)) {
+            log.error("스레드 풀이 시간 내에 종료되지 않았습니다.");
+            executorService.shutdownNow(); // 시간 초과 시 강제 종료
+        }
+
+        long executionTime = System.currentTimeMillis() - startTime;
+
+        // then
+        Product updatedProduct = productRepository.findById(testProduct.getId()).orElseThrow();
+        long orderCount = orderRepository.count();
+
+        System.out.println("초기 재고: " + INITIAL_STOCK);
+        System.out.println("성공한 주문 요청 수 (Atomic): " + successCount.get());
+        System.out.println("DB에 저장된 최종 재고: " + updatedProduct.getStock());
+        System.out.println("DB에 생성된 주문 수: " + orderCount);
+        log.info("실행 시간 : {}ms", executionTime);
+
+        // 3. 비관적 락 테스트와 검증 내용은 동일 (결과는 같아야 함)
+        // 가장 중요한 검증: 동시성 제어가 성공하여 최종 재고가 정확히 0이 되어야 한다.
+        assertThat(updatedProduct.getStock()).isZero();
+        assertThat(successCount.get()).isEqualTo(INITIAL_STOCK);
+        assertThat(orderCount).isEqualTo(INITIAL_STOCK);
+    }
+
     //
     // @Test
     // @DisplayName("Named Lock과 Facade 재시도 로직을 통해 동시 주문 요청을 올바르게 처리한다")
