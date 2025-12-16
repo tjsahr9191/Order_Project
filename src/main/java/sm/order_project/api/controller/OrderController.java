@@ -1,29 +1,32 @@
 package sm.order_project.api.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import jakarta.validation.Valid;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import sm.order_project.api.common.ApiResponse;
 import sm.order_project.api.dto.CreateOrderRequest;
 import sm.order_project.api.dto.CreateOrderResponse;
 import sm.order_project.api.dto.OrderStatisticsDto;
-import sm.order_project.api.dto.response.OrderDetailResponse;
 import sm.order_project.api.dto.request.OrderSearchCondition;
-import sm.order_project.api.dto.response.OrderStatisticsResponse;
+import sm.order_project.api.dto.response.OrderDetailResponse;
 import sm.order_project.api.dto.response.SimpleOrderResponse;
-import sm.order_project.api.kakao.KakaoPayReadyResponse;
-import sm.order_project.api.service.Facade.TestOrderFacade;
 import sm.order_project.api.service.OrderService;
-
-import java.util.UUID;
+import sm.order_project.api.service.Facade.TestOrderFacade;
 
 @RestController
 @RequiredArgsConstructor
@@ -56,7 +59,7 @@ public class OrderController {
             @RequestParam Long minAmount,
             @RequestParam(name = "year", required = false) String year,
             @RequestParam(name = "keyword", required = false) String keyword,
-            @PageableDefault(size = 5, sort = {"createdAt"}, direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 5, sort = { "createdAt" }, direction = Sort.Direction.DESC) Pageable pageable) {
 
         Condition condition = Condition.builder()
                 .memberId(memberId)
@@ -67,7 +70,6 @@ public class OrderController {
 
         return ApiResponse.ok(orderService.search(pageable, condition));
     }
-
 
     @Getter
     public static class Condition {
@@ -101,22 +103,23 @@ public class OrderController {
     }
 
     @PostMapping
-    public ApiResponse<CreateOrderResponse> createOrder (
+    public ApiResponse<CreateOrderResponse> createOrder(
             @RequestParam Long memberId,
             @Valid @RequestBody CreateOrderRequest request) {
 
         CreateOrderResponse createOrderResponse = testOrderFacade.ready(memberId, request);
-//        // 1. orderNo 생성
-//        String orderNo = UUID.randomUUID().toString();
-//
-//        // 2. 카카오페이 결제 준비 요청
-//        KakaoPayReadyResponse kakaoReadyResponse = orderService.ready(request, orderNo, memberId);
-//        String tid = kakaoReadyResponse.getTid();
-//
-//        // 3. 주문 생성
-//        orderService.create(request.toDto(orderNo, tid, memberId));
-//
-//        return ApiResponse.ok(CreateOrderResponse.of(kakaoReadyResponse));
+        // // 1. orderNo 생성
+        // String orderNo = UUID.randomUUID().toString();
+        //
+        // // 2. 카카오페이 결제 준비 요청
+        // KakaoPayReadyResponse kakaoReadyResponse = orderService.ready(request,
+        // orderNo, memberId);
+        // String tid = kakaoReadyResponse.getTid();
+        //
+        // // 3. 주문 생성
+        // orderService.create(request.toDto(orderNo, tid, memberId));
+        //
+        // return ApiResponse.ok(CreateOrderResponse.of(kakaoReadyResponse));
 
         return ApiResponse.ok(createOrderResponse);
     }
