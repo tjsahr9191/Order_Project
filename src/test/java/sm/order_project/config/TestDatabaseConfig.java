@@ -1,57 +1,33 @@
 package sm.order_project.config;
 
-import jakarta.annotation.PreDestroy;
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
+import org.springframework.context.annotation.Primary;
 
-import javax.sql.DataSource;
-
-@TestConfiguration
+@TestConfiguration(proxyBeanMethods = false)
 public class TestDatabaseConfig {
-    
-    @Container
-    private static final MySQLContainer<?> mysqlContainer;
 
-    static {
-        mysqlContainer = new MySQLContainer<>("mysql:8.0.33")
-                .withDatabaseName("testdb")
-                .withUsername("test")
-                .withPassword("test");
-        mysqlContainer.start();
+    @Value("${spring.datasource.url}")
+    private String url;
 
-        // A) 기본 설정 + rewriteBatchedStatements 옵션
-//        String originalJdbcUrl = mysqlContainer.getJdbcUrl() + "?rewriteBatchedStatements=true";
-//
-//        // TODO: BulkInsert 모니터링 - 아래 주석을 해제해야함
-////        originalJdbcUrl = originalJdbcUrl + "&profileSQL=true&logger=Slf4JLogger&maxQuerySizeToLog=2147483647";
-//
-//        System.setProperty("spring.datasource.url", originalJdbcUrl);
-//        System.setProperty("spring.datasource.username", mysqlContainer.getUsername());
-//        System.setProperty("spring.datasource.password", mysqlContainer.getPassword());
-    }
+    @Value("${spring.datasource.username}")
+    private String username;
+
+    @Value("${spring.datasource.password}")
+    private String password;
 
     @Bean
+    @Primary
     public DataSource dataSource() {
         return DataSourceBuilder.create()
-                .url(mysqlContainer.getJdbcUrl()+ "?rewriteBatchedStatements=true")
-                .username(mysqlContainer.getUsername())
-                .password(mysqlContainer.getPassword())
-                .driverClassName(mysqlContainer.getDriverClassName())
+                .url(url)
+                .username(username)
+                .password(password)
+                .driverClassName("com.mysql.cj.jdbc.Driver")
                 .build();
     }
-
-//    @Bean
-//    public MySQLContainer<?> mySQLContainer() {
-//        return mysqlContainer;
-//    }
-
-    @PreDestroy
-    public void stop() {
-        if (mysqlContainer != null && mysqlContainer.isRunning()) {
-            mysqlContainer.stop();
-        }
-    }
-} 
+}
